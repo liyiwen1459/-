@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>测测你的戏精人格 | 话剧队招新专属</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f0faf5;
+    color: #2d4a3e;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overflow-x: hidden;
+  }
+  #app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ===== 通用页面 ===== */
+  .page {
+    display: none;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 32px 24px 40px;
+    animation: fadeIn 0.45s ease;
+    position: relative;
+    z-index: 1;
+  }
+  .page.active { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ===== 背景装饰 ===== */
+  .bg-blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 0;
+    animation: blobFloat 8s ease-in-out infinite;
+  }
+  .blob-1 { width: 260px; height: 260px; top: -70px; left: -80px; background: #a8e6cf; }
+  .blob-2 { width: 220px; height: 220px; bottom: 10%; right: -70px; background: #ffd3b6; animation-delay: -3s; }
+  .blob-3 { width: 180px; height: 180px; top: 45%; left: -60px; background: #d4c5f9; animation-delay: -5s; }
+  @keyframes blobFloat {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(15px, -20px) scale(1.08); }
+    66% { transform: translate(-10px, 10px) scale(0.95); }
+  }
+
+  /* ===== 漂浮小图标（话剧主题，不重复） ===== */
+  .float-icon {
+    position: fixed;
+    font-size: 20px;
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 0;
+    animation: floatUpDown 6s ease-in-out infinite;
+    filter: drop-shadow(0 2px 6px rgba(78, 205, 164, 0.15));
+  }
+  @keyframes floatUpDown {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(10deg); }
+  }
+
+  /* ===== 封面页 ===== */
+  #page-cover {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+  .cover-mask {
+    font-size: 80px;
+    margin-bottom: 20px;
+    animation: maskBounce 2.5s ease-in-out infinite;
+    filter: drop-shadow(0 8px 20px rgba(168, 230, 207, 0.5));
+  }
+  @keyframes maskBounce {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-12px) scale(1.05); }
+  }
+  .cover-title {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #2d8a6e, #4ecda4, #6bcf9a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 14px;
+    animation: titleGlow 3s ease-in-out infinite;
+  }
+  @keyframes titleGlow {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(78, 205, 164, 0.3)); }
+    50% { filter: drop-shadow(0 0 18px rgba(78, 205, 164, 0.6)); }
+  }
+  .cover-sub {
+    font-size: 14px;
+    color: #6b9a8a;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+  }
+  .cover-desc {
+    font-size: 13px;
+    color: #8aab9e;
+    line-height: 1.9;
+    margin-bottom: 44px;
+    max-width: 300px;
+  }
+  .btn-start {
+    display: inline-block;
+    padding: 17px 60px;
+    border-radius: 50px;
+    border: none;
+    background: linear-gradient(135deg, #4ecda4, #38b88a);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    cursor: pointer;
+    box-shadow: 0 10px 32px rgba(78, 205, 164, 0.35);
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+    animation: btnPulse 2.5s ease-in-out infinite;
+  }
+  @keyframes btnPulse {
+    0%, 100% { box-shadow: 0 10px 32px rgba(78, 205, 164, 0.35); }
+    50% { box-shadow: 0 10px 42px rgba(78, 205, 164, 0.6); }
+  }
+  .btn-start::after {
+    content: '';
+    position: absolute;
+    top: -50%; left: -60%;
+    width: 40%; height: 200%;
+    background: rgba(255,255,255,0.3);
+    transform: rotate(25deg);
+    animation: shine 3s ease-in-out infinite;
+  }
+  @keyframes shine {
+    0% { left: -60%; }
+    50%, 100% { left: 130%; }
+  }
+  .btn-start:active { transform: scale(0.95); }
+
+  /* ===== 答题页 ===== */
+  #page-quiz { justify-content: flex-start; }
+  .quiz-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .quiz-progress-text { font-size: 13px; color: #8aab9e; }
+  .quiz-progress-text span { color: #38b88a; font-weight: 700; font-size: 17px; }
+  .progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #ddf0e8;
+    border-radius: 6px;
+    margin-bottom: 30px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4ecda4, #6bcf9a, #a8e6cf);
+    border-radius: 6px;
+    transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    width: 0%;
+  }
+  .question-text {
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.65;
+    margin-bottom: 28px;
+    color: #2d4a3e;
+    min-height: 60px;
+    animation: slideInQ 0.35s ease;
+  }
+  @keyframes slideInQ {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .options { display: flex; flex-direction: column; gap: 13px; }
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    padding: 17px 18px;
+    background: #ffffff;
+    border: 2px solid #e4f2ec;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-align: left;
+    font-size: 15px;
+    line-height: 1.55;
+    color: #3d5a4e;
+    box-shadow: 0 3px 12px rgba(78, 205, 164, 0.06);
+    animation: optionIn 0.35s ease backwards;
+  }
+  .option:nth-child(1) { animation-delay: 0.03s; }
+  .option:nth-child(2) { animation-delay: 0.08s; }
+  .option:nth-child(3) { animation-delay: 0.13s; }
+  .option:nth-child(4) { animation-delay: 0.18s; }
+  @keyframes optionIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .option:active { transform: scale(0.98); }
+  .option.selected {
+    border-color: #4ecda4;
+    background: #eafaf3;
+    box-shadow: 0 0 24px rgba(78, 205, 164, 0.2);
+    transform: scale(1.01);
+  }
+  .option-tag {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #e4f2ec;
+    color: #6b9a8a;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s;
+    margin-top: 1px;
+  }
+  .option.selected .option-tag {
+    background: linear-gradient(135deg, #4ecda4, #38b88a);
+    color: #fff;
+    transform: scale(1.1);
+  }
+
+  /* ===== 结果页 ===== */
+  #page-result {
+    justify-content: flex-start;
+    align-items: center;
+    text-align: center;
+    overflow: hidden;
+  }
+  .result-badge {
+    font-size: 12px;
+    color: #8aab9e;
+    letter-spacing: 4px;
+    margin-bottom: 16px;
+    margin-top: 10px;
+    animation: fadeInDown 0.5s ease backwards;
+  }
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Emoji 大动画 */
+  .result-emoji-wrap {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    animation: emojiDrop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+  }
+  @keyframes emojiDrop {
+    0% { opacity: 0; transform: translateY(-60px) scale(0.3) rotate(-20deg); }
+    60% { opacity: 1; transform: translateY(8px) scale(1.1) rotate(5deg); }
+    100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+  }
+  .result-emoji {
+    font-size: 76px;
+    animation: emojiFloat 3s ease-in-out infinite;
+    filter: drop-shadow(0 10px 24px rgba(78, 205, 164, 0.3));
+    position: relative;
+    z-index: 2;
+  }
+  @keyframes emojiFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-8px) rotate(3deg); }
+    75% { transform: translateY(-4px) rotate(-3deg); }
+  }
+  .emoji-ring {
+    position: absolute;
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    border: 3px dashed #a8e6cf;
+    animation: ringSpin 8s linear infinite;
+    opacity: 0.7;
+  }
+  .emoji-ring-2 {
+    position: absolute;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    border: 2px dotted #ffd3b6;
+    animation: ringSpinReverse 10s linear infinite;
+    opacity: 0.5;
+  }
+  @keyframes ringSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes ringSpinReverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+  }
+  .sparkle {
+    position: absolute;
+    font-size: 16px;
+    animation: sparkleAnim 2s ease-in-out infinite;
+    z-index: 3;
+  }
+  .sparkle-1 { top: 5px; right: 10px; animation-delay: 0s; }
+  .sparkle-2 { bottom: 10px; left: 5px; animation-delay: 0.6s; }
+  .sparkle-3 { top: 50%; right: -8px; animation-delay: 1.2s; }
+  @keyframes sparkleAnim {
+    0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+    50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
+  }
+
+  .result-title {
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #2d8a6e, #4ecda4, #6bcf9a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 22px;
+    line-height: 1.45;
+    padding: 0 10px;
+    animation: titlePop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s backwards;
+  }
+  @keyframes titlePop {
+    0% { opacity: 0; transform: scale(0.7); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  .result-desc {
+    font-size: 15px;
+    line-height: 1.95;
+    color: #4a6b5e;
+    margin-bottom: 26px;
+    padding: 0 8px;
+    text-align: left;
+    animation: fadeSlideUp 0.6s ease 0.5s backwards;
+  }
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .result-box {
+    width: 100%;
+    background: #ffffff;
+    border: 2px solid #e4f2ec;
+    border-radius: 18px;
+    padding: 20px 22px;
+    margin-bottom: 16px;
+    text-align: left;
+    box-shadow: 0 4px 18px rgba(78, 205, 164, 0.08);
+    animation: fadeSlideUp 0.6s ease 0.7s backwards;
+    position: relative;
+    overflow: hidden;
+  }
+  .result-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: linear-gradient(180deg, #4ecda4, #a8e6cf);
+    border-radius: 4px 0 0 4px;
+  }
+  .result-box-label {
+    font-size: 11px;
+    color: #8aab9e;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+  }
+  .result-box-content {
+    font-size: 16px;
+    color: #2d8a6e;
+    font-weight: 700;
+    line-height: 1.6;
+  }
+  .result-action {
+    width: 100%;
+    background: linear-gradient(135deg, #eafaf3, #f0fdf8);
+    border: 2px dashed #4ecda4;
+    border-radius: 18px;
+    padding: 20px 22px;
+    margin-bottom: 26px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #2d4a3e;
+    text-align: left;
+    animation: fadeSlideUp 0.6s ease 0.9s backwards, actionGlow 2.5s ease-in-out 1.5s infinite;
+  }
+  @keyframes actionGlow {
+    0%, 100% { box-shadow: 0 0 0 rgba(78, 205, 164, 0); }
+    50% { box-shadow: 0 0 24px rgba(78, 205, 164, 0.2); }
+  }
+  .result-action strong { color: #2d8a6e; }
+  .result-footer {
+    font-size: 13px;
+    color: #8aab9e;
+    line-height: 1.8;
+    margin-bottom: 22px;
+    animation: fadeSlideUp 0.6s ease 1.1s backwards;
+  }
+  .btn-restart {
+    display: inline-block;
+    padding: 15px 48px;
+    border-radius: 50px;
+    border: 2px solid #a8e6cf;
+    background: #ffffff;
+    color: #38b88a;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.25s;
+    animation: fadeSlideUp 0.6s ease 1.2s backwards;
+    box-shadow: 0 4px 16px rgba(78, 205, 164, 0.12);
+  }
+  .btn-restart:active { background: #eafaf3; transform: scale(0.96); }
+
+  /* 彩带粒子 */
+  .confetti {
+    position: absolute;
+    width: 8px;
+    height: 14px;
+    border-radius: 2px;
+    top: -20px;
+    animation: confettiFall linear forwards;
+    z-index: 5;
+    pointer-events: none;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* 结果页顶部彩带条 */
+  .result-ribbon {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(90deg, #4ecda4, #ffd3b6, #d4c5f9, #a8e6cf, #4ecda4);
+    background-size: 200% 100%;
+    animation: ribbonSlide 3s linear infinite;
+    z-index: 10;
+  }
+  @keyframes ribbonSlide {
+    0% { background-position: 0% 0; }
+    100% { background-position: 200% 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 背景装饰 -->
+<div class="bg-blob blob-1"></div>
+<div class="bg-blob blob-2"></div>
+<div class="bg-blob blob-3"></div>
+
+<!-- 话剧主题漂浮小图标（不重复） -->
+<div class="float-icon" style="top:8%; right:12%;">🎭</div>
+<div class="float-icon" style="top:22%; left:8%; animation-delay:-1s;">🎬</div>
+<div class="float-icon" style="top:38%; right:6%; animation-delay:-2s;">🎟️</div>
+<div class="float-icon" style="top:52%; left:12%; animation-delay:-3s;">🎪</div>
+<div class="float-icon" style="top:68%; right:10%; animation-delay:-4s;">🎤</div>
+<div class="float-icon" style="top:82%; left:6%; animation-delay:-5s;">📜</div>
+<div class="float-icon" style="top:15%; left:45%; animation-delay:-2.5s;">🎩</div>
+<div class="float-icon" style="top:75%; right:45%; animation-delay:-3.5s;">👏</div>
+
+<div id="app">
+
+  <!-- 封面页 -->
+  <div class="page active" id="page-cover">
+    <div class="cover-mask">🎭</div>
+    <div class="cover-title">测测你的戏精人格</div>
+    <div class="cover-sub">话剧队招新专属测试</div>
+    <div class="cover-desc">
+      18道题，1分钟<br>
+      看看你身体里住着哪个戏精<br>
+      凭结果截图到招新摊位<br>
+      可领专属「戏精证」一份
+    </div>
+    <button class="btn-start" onclick="startQuiz()">开始测试</button>
+  </div>
+
+  <!-- 答题页 -->
+  <div class="page" id="page-quiz">
+    <div class="quiz-header">
+      <div class="quiz-progress-text">第 <span id="q-current">1</span> / <span id="q-total">18</span> 题</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="question-text" id="question-text"></div>
+    <div class="options" id="options"></div>
+  </div>
+
+  <!-- 结果页 -->
+  <div class="page" id="page-result">
+    <div class="result-ribbon"></div>
+    <div class="result-badge">你 的 戏 精 人 格 是</div>
+
+    <div class="result-emoji-wrap">
+      <div class="emoji-ring"></div>
+      <div class="emoji-ring-2"></div>
+      <div class="sparkle sparkle-1">✨</div>
+      <div class="sparkle sparkle-2">⭐</div>
+      <div class="sparkle sparkle-3">💫</div>
+      <div class="result-emoji" id="result-emoji"></div>
+    </div>
+
+    <div class="result-title" id="result-title"></div>
+    <div class="result-desc" id="result-desc"></div>
+    <div class="result-box">
+      <div class="result-box-label">适 合 岗 位</div>
+      <div class="result-box-content" id="result-role"></div>
+    </div>
+    <div class="result-action" id="result-action"></div>
+    <div class="result-footer">凭结果截图到招新摊位<br>领取专属「戏精证」一份</div>
+    <button class="btn-restart" onclick="restartQuiz()">再测一次</button>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   类型常量
+   ============================================================ */
+const TYPE = {
+  STAGE:    'stage',
+  SCRIPT:   'script',
+  IMPROV:   'improv',
+  VOICE:    'voice',
+  GIGGLER:  'giggler',
+  NERVOUS:  'nervous',
+  BACKSTAGE:'backstage',
+  OBSERVER: 'observer'
+};
+
+/* ============================================================
+   题库
+   ============================================================ */
+const QUESTIONS = [
+  {
+    q: '你第一次走进排练室，最可能发生什么？',
+    options: [
+      { text: '直接走到中间，感受一下站在舞台上的感觉', type: TYPE.STAGE },
+      { text: '先找个角落坐下，观察大家的互动和站位', type: TYPE.OBSERVER },
+      { text: '随便找个位置坐下，很快和旁边的人聊起来', type: TYPE.IMPROV },
+      { text: '站在门口犹豫一下，然后选一个离门最近的位置', type: TYPE.NERVOUS }
+    ]
+  },
+  {
+    q: '拿到剧本后，你第一件事是？',
+    options: [
+      { text: '翻到自己角色的所有台词，开始默念', type: TYPE.STAGE },
+      { text: '把整个剧本读完，思考结局或人物动机', type: TYPE.SCRIPT },
+      { text: '先看对手角色的台词，想想怎么接戏', type: TYPE.IMPROV },
+      { text: '数一数自己有几句话，然后深呼吸', type: TYPE.NERVOUS }
+    ]
+  },
+  {
+    q: '排练时导演突然说“这段即兴来一版”，你的反应是？',
+    options: [
+      { text: '立刻开始尝试，享受自由发挥', type: TYPE.IMPROV },
+      { text: '脑子里开始编一个新的情节或结局', type: TYPE.SCRIPT },
+      { text: '先看别人怎么演，再跟着做', type: TYPE.NERVOUS },
+      { text: '思考这句话用什么样的声音和语调更合适', type: TYPE.VOICE }
+    ]
+  },
+  {
+    q: '你在排练时忘词了，第一反应是？',
+    options: [
+      { text: '面不改色地编一句，假装是导演新改的', type: TYPE.SCRIPT },
+      { text: '用动作拖延时间，等对手提醒', type: TYPE.IMPROV },
+      { text: '直接笑场，说“对不起再来一遍”', type: TYPE.GIGGLER },
+      { text: '愣住，大脑空白，然后看向导演', type: TYPE.NERVOUS }
+    ]
+  },
+  {
+    q: '如果让你给角色设计一个标志性动作，你会选？',
+    options: [
+      { text: '一个能展现角色内心挣扎的肢体动作', type: TYPE.STAGE },
+      { text: '一个和台词形成反差的微表情', type: TYPE.SCRIPT },
+      { text: '一个能根据观众反应调整的互动动作', type: TYPE.IMPROV },
+      { text: '一个配合特定音效的声音处理', type: TYPE.VOICE }
+    ]
+  },
+  {
+    q: '排练休息时，你通常在做什么？',
+    options: [
+      { text: '对着镜子练习刚刚那段的情绪', type: TYPE.STAGE },
+      { text: '翻剧本，想下一场怎么改', type: TYPE.SCRIPT },
+      { text: '和旁边的人聊天，顺便把刚学的梗用上', type: TYPE.GIGGLER },
+      { text: '找个安静的地方喝水，恢复能量', type: TYPE.NERVOUS }
+    ]
+  },
+  {
+    q: '演出当天，你站在侧台等上场，心里在想什么？',
+    options: [
+      { text: '终于轮到我了，灯光、观众、掌声，来吧', type: TYPE.STAGE },
+      { text: '在脑子里把整场戏的节奏再过一遍', type: TYPE.NERVOUS },
+      { text: '想着一会儿万一出岔子怎么救', type: TYPE.IMPROV },
+      { text: '在默念台词的同时，脑子里冒出一个新版本的结局', type: TYPE.SCRIPT }
+    ]
+  },
+  {
+    q: '演出结束后，你最可能听到别人对你说什么？',
+    options: [
+      { text: '“你刚才那段太炸了，全场都在看你”', type: TYPE.STAGE },
+      { text: '“你那个声音是怎么发出来的？太像了”', type: TYPE.VOICE },
+      { text: '“你笑场了吧？我看到你抖了一下”', type: TYPE.GIGGLER },
+      { text: '“你刚才那个救场太自然了，观众根本没发现”', type: TYPE.IMPROV }
+    ]
+  },
+  {
+    q: '如果让你在话剧队里选一个最想尝试的岗位，你会选？',
+    options: [
+      { text: '主演，站在舞台中央的那种', type: TYPE.STAGE },
+      { text: '编剧，把脑子里那些奇怪的故事写出来', type: TYPE.SCRIPT },
+      { text: '即兴组，专门负责临场编词救场', type: TYPE.IMPROV },
+      { text: '配音，用声音塑造角色', type: TYPE.VOICE }
+    ]
+  },
+  {
+    q: '你觉得自己在话剧队最可能变成哪种人？',
+    options: [
+      { text: '一上台就发光，一下台就消失', type: TYPE.STAGE },
+      { text: '天天追着导演说“我觉得这段可以改”', type: TYPE.SCRIPT },
+      { text: '排练时最吵，演出时最稳', type: TYPE.IMPROV },
+      { text: '排练全勤，但每次上台前都想请假', type: TYPE.NERVOUS }
+    ]
+  },
+  {
+    q: '如果演出时道具突然坏了，你会？',
+    options: [
+      { text: '用无实物表演继续演下去，观众根本看不出来', type: TYPE.IMPROV },
+      { text: '即兴加一句台词解释这个“新道具”', type: TYPE.SCRIPT },
+      { text: '忍不住笑场，但努力憋住', type: TYPE.GIGGLER },
+      { text: '迅速在脑子里想怎么用现有道具补救', type: TYPE.BACKSTAGE }
+    ]
+  },
+  {
+    q: '被临时通知“十分钟后你顶替上台”，你的反应是？',
+    options: [
+      { text: '给我五分钟，我把台词过一遍就行', type: TYPE.STAGE },
+      { text: '直接上，反正即兴是我的强项', type: TYPE.IMPROV },
+      { text: '先问清楚角色是什么性格，我要设计声音', type: TYPE.VOICE },
+      { text: '开始紧张，但手上已经在翻剧本了', type: TYPE.NERVOUS }
+    ]
+  },
+  {
+    q: '你看别人排练时，通常在想什么？',
+    options: [
+      { text: '如果是我演，我会怎么处理这段', type: TYPE.STAGE },
+      { text: '这个走位可以调一下，那个灯可以再亮一点', type: TYPE.BACKSTAGE },
+      { text: '他这句台词如果换个语气会更好笑', type: TYPE.VOICE },
+      { text: '内心已经跟着演了一遍，表情比台上还丰富', type: TYPE.OBSERVER }
+    ]
+  },
+  {
+    q: '导演说“情绪再饱满一点”，你会？',
+    options: [
+      { text: '立刻放大肢体和表情，给足能量', type: TYPE.STAGE },
+      { text: '开始在脑子里重新理解这个角色的动机', type: TYPE.SCRIPT },
+      { text: '用不同音量和音色试一遍，找到最对的', type: TYPE.VOICE },
+      { text: '努力调动情绪，但越想越紧张', type: TYPE.NERVOUS }
+    ]
+  },
+  {
+    q: '演出时灯光突然灭了，全场安静，你会？',
+    options: [
+      { text: '在黑暗中继续演，用声音撑住场子', type: TYPE.VOICE },
+      { text: '即兴加一句“这是天意”，把事故变故事', type: TYPE.IMPROV },
+      { text: '忍不住在黑暗里笑出声', type: TYPE.GIGGLER },
+      { text: '趁机快速调整道具位置', type: TYPE.BACKSTAGE }
+    ]
+  },
+  {
+    q: '排练结束后的聚餐，你通常在聊什么？',
+    options: [
+      { text: '刚才那场戏哪个瞬间特别爽', type: TYPE.STAGE },
+      { text: '下一部戏想排什么，怎么改', type: TYPE.SCRIPT },
+      { text: '模仿刚才某个人忘词的样子', type: TYPE.GIGGLER },
+      { text: '安静吃饭，听大家聊，偶尔插一句金句', type: TYPE.OBSERVER }
+    ]
+  },
+  {
+    q: '看到剧本里有一句特别离谱的台词，你会？',
+    options: [
+      { text: '试着用最严肃的方式把它念出来', type: TYPE.VOICE },
+      { text: '直接改掉，然后告诉导演“我觉得这样更合理”', type: TYPE.SCRIPT },
+      { text: '笑到停不下来，然后说“不行这得留着”', type: TYPE.GIGGLER },
+      { text: '想这句台词是不是有什么隐藏含义', type: TYPE.OBSERVER }
+    ]
+  },
+  {
+    q: '招新面试时，你最想展示什么？',
+    options: [
+      { text: '我的表现力和感染力', type: TYPE.STAGE },
+      { text: '我的脑洞和编故事能力', type: TYPE.SCRIPT },
+      { text: '我的临场反应和接梗能力', type: TYPE.IMPROV },
+      { text: '我的声音和台词功底', type: TYPE.VOICE }
+    ]
+  }
+];
+
+/* ============================================================
+   结果文案
+   ============================================================ */
+const RESULTS = {
+  [TYPE.STAGE]: {
+    emoji: '🌟',
+    title: '“上台社牛下台社恐”型',
+    desc: '你在台上光芒万丈，一个眼神能镇住全场，一句台词能让人起鸡皮疙瘩。但排练结束后的聚餐，你只想坐在角落安静地涮肉。你不是不爱社交，你只是把所有的社交能量都留给了角色。',
+    role: '主演 / 独白担当 / 舞台焦点',
+    action: '来话剧队，<strong>你的舞台在等你！</strong>'
+  },
+  [TYPE.SCRIPT]: {
+    emoji: '✍️',
+    title: '“剧本魔改大师”型',
+    desc: '别人拿到剧本是背台词，你拿到剧本是动手术。你脑子里永远有更好的版本，导演说“按剧本走”，你说“但是我觉得”。你不是不尊重剧本，你只是太爱故事了。',
+    role: '编剧 / 导演 / 剧本改编',
+    action: '带上你的脑洞，<strong>来话剧队把它变成现实！</strong>'
+  },
+  [TYPE.IMPROV]: {
+    emoji: '⚡',
+    title: '“忘词救场之神”型',
+    desc: '别人忘词是事故，你忘词是故事。你编的词比原版还顺，你接的梗比剧本还妙。你是那种队友看到你忘词反而放心的人——因为你一定会圆回来。',
+    role: '即兴喜剧 / 对手戏救场王 / 现场编创',
+    action: '来话剧队，<strong>你的临场反应就是超能力！</strong>'
+  },
+  [TYPE.VOICE]: {
+    emoji: '🎙️',
+    title: '“人类变声器”型',
+    desc: '你的嗓子是乐器，也是武器。别人用一个声音演一个角色，你用十个声音演一个角色。你不在的时候，排练室少了一种声音，也少了一种可能。',
+    role: '旁白 / 配音 / 声音反差角色',
+    action: '来话剧队，<strong>让你的声音被更多人听见！</strong>'
+  },
+  [TYPE.GIGGLER]: {
+    emoji: '😂',
+    title: '“笑场传染源”型',
+    desc: '你是那种排练时最认真、演出时最先笑场的人。你笑场会传染，最后全组一起笑。但神奇的是，观众以为那是设计好的。你是团队的快乐源泉，也是舞台上的意外制造机。',
+    role: '喜剧担当 / 群戏核心 / 气氛发动机',
+    action: '来话剧队，<strong>没有你，排练室会少一半笑声！</strong>'
+  },
+  [TYPE.NERVOUS]: {
+    emoji: '🫣',
+    title: '“排练全勤上台腿软”型',
+    desc: '你从不迟到，从不早退，台词背得最熟，笔记做得最全。但一上台，腿就不听使唤。你不是不行，你只是太在乎。而话剧队最擅长的，就是把“太在乎”变成“刚刚好”。',
+    role: '全能替补 / 幕后核心 / 未来台柱',
+    action: '来话剧队，<strong>我们一起把你的紧张变成气场！</strong>'
+  },
+  [TYPE.BACKSTAGE]: {
+    emoji: '🔧',
+    title: '“道具间隐藏大佬”型',
+    desc: '你也许不是台上最亮的那一个，但你是后台最不能少的那一个。灯光、音效、道具、走位，你比导演还清楚。没有你，戏演不下去；有了你，一切都刚刚好。',
+    role: '舞台监督 / 道具管理 / 灯光音效',
+    action: '来话剧队，<strong>幕后的王座给你留着！</strong>'
+  },
+  [TYPE.OBSERVER]: {
+    emoji: '👀',
+    title: '“观众席戏比台上多”型',
+    desc: '你看戏的时候，内心已经演完了所有角色。你会在脑子里给每个演员设计更好的走位，给每句台词想更妙的语气。你不是观众，你是潜伏在观众席的导演。',
+    role: '戏剧评论 / 导演助理 / 剧本顾问',
+    action: '来话剧队，<strong>把你的内心戏变成真正的舞台！</strong>'
+  }
+};
+
+/* ============================================================
+   状态
+   ============================================================ */
+let currentIndex = 0;
+let scores = {};
+
+function initScores() {
+  scores = {};
+  Object.values(TYPE).forEach(t => { scores[t] = 0; });
+}
+
+function startQuiz() {
+  currentIndex = 0;
+  initScores();
+  document.getElementById('q-total').textContent = QUESTIONS.length;
+  showPage('page-quiz');
+  renderQuestion();
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[currentIndex];
+  document.getElementById('q-current').textContent = currentIndex + 1;
+  document.getElementById('progress-fill').style.width = ((currentIndex) / QUESTIONS.length * 100) + '%';
+  document.getElementById('question-text').textContent = q.q;
+
+  const container = document.getElementById('options');
+  container.innerHTML = '';
+  const tags = ['A', 'B', 'C', 'D'];
+
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('div');
+    btn.className = 'option';
+    btn.innerHTML = `<div class="option-tag">${tags[i]}</div><div>${opt.text}</div>`;
+    btn.onclick = () => selectOption(opt.type);
+    container.appendChild(btn);
+  });
+}
+
+function selectOption(type) {
+  const options = document.querySelectorAll('.option');
+  options.forEach(o => o.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+
+  scores[type] = (scores[type] || 0) + 1;
+
+  setTimeout(() => {
+    currentIndex++;
+    if (currentIndex < QUESTIONS.length) {
+      renderQuestion();
+    } else {
+      document.getElementById('progress-fill').style.width = '100%';
+      setTimeout(showResult, 350);
+    }
+  }, 320);
+}
+
+/* ============================================================
+   结果页 + 动画
+   ============================================================ */
+function showResult() {
+  let maxType = null;
+  let maxScore = -1;
+  Object.keys(scores).forEach(t => {
+    if (scores[t] > maxScore) {
+      maxScore = scores[t];
+      maxType = t;
+    }
+  });
+
+  const result = RESULTS[maxType];
+  document.getElementById('result-emoji').textContent = result.emoji;
+  document.getElementById('result-title').textContent = result.title;
+  document.getElementById('result-desc').textContent = result.desc;
+  document.getElementById('result-role').textContent = result.role;
+  document.getElementById('result-action').innerHTML = result.action;
+
+  showPage('page-result');
+
+  setTimeout(() => launchConfetti(), 600);
+}
+
+/* 彩带粒子 */
+function launchConfetti() {
+  const colors = ['#4ecda4', '#ffd3b6', '#d4c5f9', '#a8e6cf', '#6bcf9a', '#f9e2ae', '#f7b7a3'];
+  const count = 40;
+
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const confetti = document.createElement('div');
+      confetti.className = 'confetti';
+      confetti.style.left = Math.random() * 100 + '%';
+      confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.animationDuration = (Math.random() * 1.5 + 2) + 's';
+      confetti.style.animationDelay = (Math.random() * 0.3) + 's';
+      confetti.style.width = (Math.random() * 6 + 5) + 'px';
+      confetti.style.height = (Math.random() * 8 + 8) + 'px';
+      confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+
+      document.getElementById('page-result').appendChild(confetti);
+
+      setTimeout(() => confetti.remove(), 4000);
+    }, i * 50);
+  }
+}
+
+function restartQuiz() {
+  startQuiz();
+}
+</script>
+</body>
+</html>
